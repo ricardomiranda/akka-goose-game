@@ -4,6 +4,6 @@ import akka.actor.typed.ActorSystem
 import akka.NotUsed
 
 object Main extends App {
-  println "Goose game"
+  print("Goose game")
 //  val system: ActorSystem[NotUsed] = ActorSystem(Game.root, "GooseGame")
 }
