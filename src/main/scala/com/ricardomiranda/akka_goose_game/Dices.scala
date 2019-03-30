@@ -1,5 +1,7 @@
 package com.ricardomiranda.akka_goose_game
 
+import java.util.Scanner
+
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
@@ -28,7 +30,7 @@ class Dices {
     Behaviors.receive[DCommand] { (ctx, msg) =>
       msg match {
         case RollDices(from, seed) =>
-          from ! DicesValue(roll(playerName = ctx.self.path.toString, state = state, seed = seed))
+          from ! DicesValue(roll(playerName = from.path.toString, state = state, seed = seed))
           Behaviors.same
         case EndGame =>
           Behaviors.stopped
@@ -40,15 +42,19 @@ class Dices {
   private[akka_goose_game] def roll(playerName: String, state: State_, seed: Int): (Int, Int) =
     state.isAutomaticDices match { 
       case true => 
-        //todo: random dices with seed
         val r = new scala.util.Random(seed)
         val max = 6
         (r.nextInt(max) + 1, r.nextInt(max) + 1)
       case false => 
-        println(s"please insert dices for player ${playerName}")
-        //todo: read from cli dices value
-        (2, 3)
+        askUser(playerName = playerName)
     }
+
+  private[akka_goose_game] def askUser(playerName: String): (Int, Int) = {
+    val input = readLine(s"Player ${playerName} please write your play - 2 dices separated by a space.")
+    val ExpectedPattern = "(\\d+) (\\d*\\.?\\d*)".r
+    val ExpectedPattern(dice1, dice2) = input
+    (dice1.toInt, dice2.toInt)
+  }
 }
 
 
