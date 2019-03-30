@@ -5,7 +5,7 @@
 Goose game is a game where two or more players move pieces around a track by rolling a die. 
 
 ## Authors
-  * **Ricardo Miranda** - [Ricardo Miranda](https://github.com/ricardomiranda)
+* **Ricardo Miranda** - [Ricardo Miranda](https://github.com/ricardomiranda)
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
