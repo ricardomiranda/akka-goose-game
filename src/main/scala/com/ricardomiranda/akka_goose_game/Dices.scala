@@ -7,18 +7,18 @@ sealed trait DCommand
 case class DicesValue(dices: (Int, Int)) extends DCommand
 case object EndGame extends DCommand
 case class RollDices(from: ActorRef[DCommand], seed: Int = 0) extends DCommand
-case class StartGame(is_automatic_dices: Boolean = true) extends DCommand
+case class StartGame(isAutomaticDices: Boolean = true) extends DCommand
 
 class Dices {
-  case class State_(is_automatic_dices: Boolean)
+  case class State_(isAutomaticDices: Boolean)
 
   val rest: Behavior[DCommand] = resting()
 
   private def resting(): Behavior[DCommand] =
     Behaviors.receive[DCommand] { (ctx, msg) => //leave ctx for logging
       msg match {
-        case StartGame(is_automatic_dices) =>
-          rolling(state = State_(is_automatic_dices = is_automatic_dices))
+        case StartGame(isAutomaticDices) =>
+          rolling(state = State_(isAutomaticDices = isAutomaticDices))
         case _ =>
           Behaviors.same
       }
@@ -28,7 +28,7 @@ class Dices {
     Behaviors.receive[DCommand] { (ctx, msg) =>
       msg match {
         case RollDices(from, seed) =>
-          from ! DicesValue(roll_dices(player_name = ctx.self.path.toString, state = state, seed = seed))
+          from ! DicesValue(rollDices(playerName = ctx.self.path.toString, state = state, seed = seed))
           Behaviors.same
         case EndGame =>
           Behaviors.stopped
@@ -37,13 +37,13 @@ class Dices {
       }
     }
 
-  private[akka_goose_game] def roll_dices(player_name: String, state: State_, seed: Int): (Int, Int) =
-    state.is_automatic_dices match { 
+  private[akka_goose_game] def rollDices(playerName: String, state: State_, seed: Int): (Int, Int) =
+    state.isAutomaticDices match { 
       case true => 
         //todo: random dices with seed
         (1, 2)
       case false => 
-        println(s"please insert dices for player ${player_name}")
+        println(s"please insert dices for player ${playerName}")
         //todo: read from cli dices value
         (2, 3)
     }
