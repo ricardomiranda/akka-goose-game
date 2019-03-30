@@ -28,7 +28,7 @@ class Dices {
     Behaviors.receive[DCommand] { (ctx, msg) =>
       msg match {
         case RollDices(from, seed) =>
-          from ! DicesValue(rollDices(playerName = ctx.self.path.toString, state = state, seed = seed))
+          from ! DicesValue(roll(playerName = ctx.self.path.toString, state = state, seed = seed))
           Behaviors.same
         case EndGame =>
           Behaviors.stopped
@@ -37,7 +37,7 @@ class Dices {
       }
     }
 
-  private[akka_goose_game] def rollDices(playerName: String, state: State_, seed: Int): (Int, Int) =
+  private[akka_goose_game] def roll(playerName: String, state: State_, seed: Int): (Int, Int) =
     state.isAutomaticDices match { 
       case true => 
         //todo: random dices with seed
