@@ -41,7 +41,9 @@ class Dices {
     state.isAutomaticDices match { 
       case true => 
         //todo: random dices with seed
-        (1, 2)
+        val r = new scala.util.Random(seed)
+        val max = 6
+        (r.nextInt(max) + 1, r.nextInt(max) + 1)
       case false => 
         println(s"please insert dices for player ${playerName}")
         //todo: read from cli dices value
