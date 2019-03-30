@@ -53,7 +53,7 @@ class Dices {
   private[akka_goose_game] def askUser(playerName: String): (Int, Int) = {
     println(s"Player ${playerName} please write your play - 2 dices separated by a space.")
     val input = readLine()
-    val ExpectedPattern = "([1-6]) ([1-6])".r
+    val ExpectedPattern = "\\s*([1-6])\\s*([1-6])\\s*".r
     val ExpectedPattern(dice1, dice2) = input
     (dice1.toInt, dice2.toInt)
   }
