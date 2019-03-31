@@ -54,5 +54,41 @@ class DicesSpec
     }
   }
 
+  "An invalidad message in resting behaviour" must {
+    "not change state" in {
+      val probe: TestProbe[DCommand] = TestProbe[DCommand]()
+      val dices: ActorRef[DCommand] = spawn(new Dices().rest)
+
+      dices ! RollDices(from = probe.ref, seed = 1090)
+
+      probe.expectNoMessage()
+    }
+  }
+
+  "An invalidad message in rolling behaviour" must {
+    "not change state" in {
+      val probe: TestProbe[DCommand] = TestProbe[DCommand]()
+      val dices: ActorRef[DCommand] = spawn(new Dices().rest)
+
+      dices ! StartGame(isAutomaticDices = true)
+      dices ! StartGame(isAutomaticDices = true)
+
+      probe.expectNoMessage()
+    }
+  }
+
+  "An EndGame message" must {
+    "stop dices" in {
+      val probe: TestProbe[DCommand] = TestProbe[DCommand]()
+      val dices: ActorRef[DCommand] = spawn(new Dices().rest)
+
+      dices ! StartGame(isAutomaticDices = true)
+      dices ! EndGame
+      dices ! RollDices(from = probe.ref, seed = 1090)
+
+      probe.expectNoMessage()
+    }
+  }
+
   override def afterAll(): Unit = shutdownTestKit()
 }
