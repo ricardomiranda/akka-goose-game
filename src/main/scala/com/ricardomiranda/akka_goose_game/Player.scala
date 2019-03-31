@@ -20,7 +20,7 @@ class Player {
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
         case StartPlayer(automaticDices) =>
-          val state = State_(automaticDices = automaticDices, name = ctx.self.path.toString.split("/").last, position = 0)
+          val state = State_(automaticDices = automaticDices, name = ctx.self.path.toString.split("/").reverse.head, position = 0)
           println(s"Player ${state.name} joined the Goose Game")
           playing(state = state)
         case _ =>
@@ -44,7 +44,8 @@ class Player {
  
   private[akka_goose_game] def move(state: State_, seed: Int): State_ = {
     val dices = rollDices(state = state, seed = seed)
-    state.copy(position = state.position + dices._1 + dices._2)
+    val newState = state.copy(position = state.position + dices._1 + dices._2)
+    newState
   }
 
   private[akka_goose_game] def rollDices(state: State_, seed: Int): (Int, Int) =
