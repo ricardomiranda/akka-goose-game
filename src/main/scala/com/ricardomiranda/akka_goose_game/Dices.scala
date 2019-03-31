@@ -39,6 +39,7 @@ class Dices {
       }
     }
 
+
   private[akka_goose_game] def roll(playerName: String, state: State_, seed: Int): (Int, Int) =
     state.isAutomaticDices match { 
       case true => 
@@ -50,8 +51,9 @@ class Dices {
     }
 
   private[akka_goose_game] def askUser(playerName: String): (Int, Int) = {
-    val input = readLine(s"Player ${playerName} please write your play - 2 dices separated by a space.")
-    val ExpectedPattern = "(\\d+) (\\d*\\.?\\d*)".r
+    println(s"Player ${playerName} please write your play - 2 dices separated by a space.")
+    val input = readLine()
+    val ExpectedPattern = "\\s*([1-6])\\s*([1-6])\\s*".r
     val ExpectedPattern(dice1, dice2) = input
     (dice1.toInt, dice2.toInt)
   }
