@@ -10,13 +10,20 @@ class PlayerSpec
     with Matchers
     with BeforeAndAfterAll {
 
+  "A Player" must {
+    "be alive" in {
+      val testKit: BehaviorTestKit[PCommand] = BehaviorTestKit(new Player().rest)
+      testKit.run(StartPlayer(automaticDices = true))
+      assert(testKit.isAlive)
+    }
+  }
+
   "A player" must {
     "send message" in {
       val probe: TestProbe[PCommand] = TestProbe[PCommand]()
-      val dices: ActorRef[DCommand] = spawn(new Dices().rest)
       val player: ActorRef[PCommand] = spawn(new Player().rest, "Test_Player")
 
-      player ! StartPlayer(dices = dices.ref)
+      player ! StartPlayer(automaticDices = true)
       player ! StartMove(from = probe.ref)
 
       probe.expectMessageType[PCommand]
@@ -24,66 +31,64 @@ class PlayerSpec
   }
 
   "A player with seed 0" must {
-    "send message with position 5" in {
+    "send message with position 6" in {
       val probe: TestProbe[PCommand] = TestProbe[PCommand]()
-      val dices: ActorRef[DCommand] = spawn(new Dices().rest)
-      val player: ActorRef[PCommand] = spawn(new Player().rest, "Test_other_Player")
+      val player: ActorRef[PCommand] = spawn(new Player().rest, "Other_Player")
 
-      dices ! StartGame(isAutomaticDices = true)
-      player ! StartPlayer(dices = dices.ref)
+      player ! StartPlayer(automaticDices = true)
       player ! StartMove(from = probe.ref)
 
-      probe.expectMessage(EndMove(player, 0))
+      probe.expectMessage(EndMove(player, 6))
     }
   }
 
-  // "A set of 2 dices with seed 1090" must {
-  //   "send message with dices (4, 3)" in {
-  //     val probe: TestProbe[DCommand] = TestProbe[DCommand]()
-  //     val dices: ActorRef[DCommand] = spawn(new Dices().rest)
+  "A player with seed 1090" must {
+    "send message with position 7" in {
+      val probe: TestProbe[PCommand] = TestProbe[PCommand]()
+      val player: ActorRef[PCommand] = spawn(new Player().rest, "Test_other_Player")
 
-  //     dices ! StartGame(isAutomaticDices = true)
-  //     dices ! RollDices(from = probe.ref, seed = 1090)
+      player ! StartPlayer(automaticDices = true)
+      player ! StartMove(from = probe.ref, seed = 1090)
 
-  //     probe.expectMessage(DicesValue(4, 3))
-  //   }
-  // }
+      probe.expectMessage(EndMove(player, 7))
+    }
+  }
 
-  // "An invalidad message in resting behaviour" must {
-  //   "not change state" in {
-  //     val probe: TestProbe[PCommand] = TestProbe[PCommand]()
-  //     val dices: ActorRef[PCommand] = spawn(new Player().rest)
+  "An invalidad message in resting behaviour" must {
+    "not change state" in {
+      val probe: TestProbe[PCommand] = TestProbe[PCommand]()
+      val player: ActorRef[PCommand] = spawn(new Player().rest, "Yet_Another_Player")
 
-  //     dices ! RollDices(from = probe.ref, seed = 1090)
+      player ! StartMove(from = probe.ref)
 
-  //     probe.expectNoMessage()
-  //   }
-  // }
+      probe.expectNoMessage()
+    }
+  }
 
-  // "An invalidad message in rolling behaviour" must {
-  //   "not change state" in {
-  //     val probe: TestProbe[DCommand] = TestProbe[DCommand]()
-  //     val dices: ActorRef[DCommand] = spawn(new Dices().rest)
+  "An invalidad message in playing behaviour" must {
+    "not change state" in {
+      val probe: TestProbe[PCommand] = TestProbe[PCommand]()
+      val player: ActorRef[PCommand] = spawn(new Player().rest, "Another")
 
-  //     dices ! StartGame(isAutomaticDices = true)
-  //     dices ! StartGame(isAutomaticDices = true)
+      player ! StartPlayer(automaticDices = true)
+      player ! StartPlayer(automaticDices = true)
 
-  //     probe.expectNoMessage()
-  //   }
-  // }
+      probe.expectNoMessage()
+    }
+  }
 
-  // "An EndGame message" must {
-  //   "stop dices" in {
-  //     val probe: TestProbe[DCommand] = TestProbe[DCommand]()
-  //     val dices: ActorRef[DCommand] = spawn(new Dices().rest)
+  "An EndPalyer message" must {
+    "stop player" in {
+      val probe: TestProbe[PCommand] = TestProbe[PCommand]()
+      val player: ActorRef[PCommand] = spawn(new Player().rest)
 
-  //     dices ! StartGame(isAutomaticDices = true)
-  //     dices ! EndGame
-  //     dices ! RollDices(from = probe.ref, seed = 1090)
+      player ! StartPlayer(automaticDices = true)
+      player ! EndPlayer
+      player ! StartMove(from = probe.ref)
 
-  //     probe.expectNoMessage()
-  //   }
-  // }
+      probe.expectNoMessage()
+    }
+  }
 
   override def afterAll(): Unit = shutdownTestKit()
 }
