@@ -8,13 +8,15 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
 sealed trait PCommand
-case class EndMove(who: ActorRef[PCommand], position: Int) extends PCommand
+case class EndMove(who: ActorRef[PCommand], space: Int) extends PCommand
 case object EndPlayer extends PCommand
+case class Prank(from: ActorRef[PCommand], prankSpace: Int, returnSpace: Int) extends PCommand
+case class SetSpace(from: ActorRef[PCommand], newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
 case class StartMove(from: ActorRef[PCommand], seed: Int = 0) extends PCommand
 case class StartPlayer(automaticDices: Boolean = true) extends PCommand
 
 class Player {
-  case class State_(automaticDices: Boolean, name: String, position: Int = 0)
+  case class State_(automaticDices: Boolean, name: String, space: Int = 0)
 
   val rest: Behavior[PCommand] = resting()
 
@@ -26,7 +28,7 @@ class Player {
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
         case StartPlayer(automaticDices) =>
-          val state = State_(automaticDices = automaticDices, name = ctx.self.path.toString.split("/").reverse.head, position = 0)
+          val state = State_(automaticDices = automaticDices, name = ctx.self.path.toString.split("/").reverse.head, space = 0)
           println(s"Player ${state.name} joined the Goose Game")
           playing(state = state)
         case _ =>
@@ -39,7 +41,15 @@ class Player {
       msg match {
         case StartMove(from, seed) =>
           val newState = move(state = state, seed)
-          from ! EndMove(ctx.self, newState.position)
+          from ! EndMove(ctx.self, newState.space)
+          playing(newState)
+        case Prank(from, prankSpace, returnSpace) =>
+          val newState = prank(state = state, prankSpace = prankSpace, returnSpace = returnSpace)
+          from ! EndMove(ctx.self, newState.space)
+          playing(newState)
+        case SetSpace(from, newSpace, dices) =>
+          val newState = setSpace(state = state, newSpace = newSpace, dices = dices)
+          from ! EndMove(ctx.self, newState.space)
           playing(newState)
         case EndPlayer =>
           Behaviors.stopped
@@ -47,11 +57,28 @@ class Player {
           Behaviors.same
       }
     }
+
+  private[akka_goose_game] def prank(state: State_, prankSpace: Int, returnSpace: Int): State_ = 
+    prankSpace match {
+      case state.space =>
+        val newState = state.copy(space = returnSpace)
+        println(s"On ${state.space} there is ${state.name}, who returns to ${newState.space}")
+        newState
+      case _ =>
+        state
+  }
+
+  private[akka_goose_game] def setSpace(state: State_, newSpace: Int, dices: (Int, Int)): State_ = {
+    val setSpaceState = state.copy(space = newSpace)
+    val newState = checkSpace(state = setSpaceState, dices = dices)
+    println(s"${state.name} is now on space ${newState.space}")
+    newState
+  }
  
   private[akka_goose_game] def move(state: State_, seed: Int): State_ = {
     val dices = rollDices(state = state, seed = seed)
-    val newState = state.copy(position = state.position + dices._1 + dices._2)
-    println(s"${state.name} rools ${dices._1}, ${dices._2}. ${state.name} moves from ${state.position} to ${newState.position}.")
+    val newState = state.copy(space = state.space + dices._1 + dices._2)
+    println(s"${state.name} rools ${dices._1}, ${dices._2}. ${state.name} moves from ${state.space} to ${newState.space}.")
     checkSpace(state = newState, dices = dices)
   }
 
@@ -75,13 +102,13 @@ class Player {
 
   @tailrec
   private def checkSpace(state: State_, dices: (Int, Int)): State_ = 
-    state.position match {
+    state.space match {
       case x if whatHappens("Goose").contains(x) =>
-        val newState = state.copy(position = state.position + dices._1 + dices._2)
-        println(s"The Goose. ${state.name} moves again and goes to ${newState.position}.")
+        val newState = state.copy(space = state.space + dices._1 + dices._2)
+        println(s"The Goose. ${state.name} moves again and goes to ${newState.space}.")
         checkSpace(state = newState, dices = dices)
       case x if whatHappens("Bridge").contains(x) =>
-        val newState = state.copy(position = 12)
+        val newState = state.copy(space = 12)
         println(s"The Bridge. ${state.name} jumps to 12")
         checkSpace(state = newState, dices = dices)
       case _ =>
