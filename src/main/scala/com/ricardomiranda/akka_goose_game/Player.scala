@@ -2,6 +2,8 @@ package com.ricardomiranda.akka_goose_game
 
 import java.util.Scanner
 
+import scala.annotation.tailrec
+
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
@@ -15,6 +17,10 @@ class Player {
   case class State_(automaticDices: Boolean, name: String, position: Int = 0)
 
   val rest: Behavior[PCommand] = resting()
+
+  val whatHappens: Map[String, Set[Int]] = Map(
+    ("Goose", Set(5, 9, 14, 18, 23, 27)), 
+    ("Bridge", Set(6)))
 
   private def resting(): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
@@ -45,7 +51,8 @@ class Player {
   private[akka_goose_game] def move(state: State_, seed: Int): State_ = {
     val dices = rollDices(state = state, seed = seed)
     val newState = state.copy(position = state.position + dices._1 + dices._2)
-    newState
+    println(s"${state.name} rools ${dices._1}, ${dices._2}. ${state.name} moves from ${state.position} to ${newState.position}.")
+    checkSpace(state = newState, dices = dices)
   }
 
   private[akka_goose_game] def rollDices(state: State_, seed: Int): (Int, Int) =
@@ -65,4 +72,19 @@ class Player {
     val ExpectedPattern(dice1, dice2) = input
     (dice1.toInt, dice2.toInt)
   }
+
+  @tailrec
+  private def checkSpace(state: State_, dices: (Int, Int)): State_ = 
+    state.position match {
+      case x if whatHappens("Goose").contains(x) =>
+        val newState = state.copy(position = state.position + dices._1 + dices._2)
+        println(s"The Goose. ${state.name} moves again and goes to ${newState.position}.")
+        checkSpace(state = newState, dices = dices)
+      case x if whatHappens("Bridge").contains(x) =>
+        val newState = state.copy(position = 12)
+        println(s"The Bridge. ${state.name} jumps to 12")
+        checkSpace(state = newState, dices = dices)
+      case _ =>
+        state
+    } 
 }

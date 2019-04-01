@@ -31,14 +31,14 @@ class PlayerSpec
   }
 
   "A player with seed 0" must {
-    "send message with position 6" in {
+    "send message with position 12" in {
       val probe: TestProbe[PCommand] = TestProbe[PCommand]()
       val player: ActorRef[PCommand] = spawn(new Player().rest, "Other_Player")
 
       player ! StartPlayer(automaticDices = true)
       player ! StartMove(from = probe.ref)
 
-      probe.expectMessage(EndMove(player, 6))
+      probe.expectMessage(EndMove(player, 12))
     }
   }
 
