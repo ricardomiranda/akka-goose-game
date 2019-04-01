@@ -21,8 +21,9 @@ class Player {
   val rest: Behavior[PCommand] = resting()
 
   val whatHappens: Map[String, Set[Int]] = Map(
-    ("Goose", Set(5, 9, 14, 18, 23, 27)), 
-    ("Bridge", Set(6)))
+    "Goose" -> Set(5, 9, 14, 18, 23, 27), 
+    "Bridge" -> Set(6),
+    "Final" -> Set(63))
 
   private def resting(): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
