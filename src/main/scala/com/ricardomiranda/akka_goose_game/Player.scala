@@ -14,6 +14,7 @@ case class Prank(from: ActorRef[PCommand], prankSpace: Int, returnSpace: Int) ex
 case class SetSpace(from: ActorRef[PCommand], newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
 case class StartMove(from: ActorRef[PCommand], seed: Int = 0) extends PCommand
 case class StartPlayer(automaticDices: Boolean = true) extends PCommand
+case class Winner(who: ActorRef[PCommand]) extends PCommand
 
 class Player {
   case class State_(automaticDices: Boolean, name: String, space: Int = 0)
@@ -42,7 +43,12 @@ class Player {
       msg match {
         case StartMove(from, seed) =>
           val newState = move(state = state, seed)
-          from ! EndMove(ctx.self, newState.space)
+          state.space - whatHappens("Final").toList.head match {
+            case 0 =>
+              from ! Winner(ctx.self)
+            case _ =>
+              from ! EndMove(ctx.self, newState.space)
+          }
           playing(newState)
         case Prank(from, prankSpace, returnSpace) =>
           val newState = prank(state = state, prankSpace = prankSpace, returnSpace = returnSpace)
