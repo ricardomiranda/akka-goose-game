@@ -7,8 +7,8 @@ import scala.util.Random
 import scala.annotation.tailrec
 
 object GooseGame {
-  val root: Behavior[NotUsed] =
-    Behaviors.setup { ctx =>
+  val root: List[String] => Option[Boolean] => Behavior[NotUsed] = 
+    playersInit => automaticDicesInit => Behaviors.setup { ctx =>
       @tailrec
       def addPlayers(automaticDices: Boolean, playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
         playersName match {
@@ -22,12 +22,30 @@ object GooseGame {
             players
         }
 
-      val players:List[ActorRef[PCommand]] = addPlayers(automaticDices = automaticDices, playersName = goosePlayers())
+      val listOfPlayers: List[String] = 
+        playersInit match {
+          case Nil => 
+            goosePlayers()
+          case xs =>
+            xs
+        }
+
+      val areAutomaticDices: Boolean =
+        automaticDicesInit match { 
+          case None => 
+            automaticDices
+          case Some(b) =>
+            b
+        }
+
+      val players:List[ActorRef[PCommand]] = addPlayers(automaticDices = areAutomaticDices, playersName = listOfPlayers)
+
 
       Behaviors.receiveSignal {
         case (_, Terminated(ref)) => Behaviors.stopped
       }
     }
+  
 
   @tailrec
   private[akka_goose_game] def goosePlayers(currentPlayers: List[String] = Nil): List[String] = {
