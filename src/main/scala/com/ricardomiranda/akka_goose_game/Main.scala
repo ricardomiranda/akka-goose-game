@@ -5,5 +5,5 @@ import akka.NotUsed
 
 object Main extends App {
   print("Goose game")
-  val system: ActorSystem[NotUsed] = ActorSystem(GooseGame.root, "GooseGame")
+  val system: ActorSystem[NotUsed] = ActorSystem(GooseGame.root(Nil)(None), "GooseGame")
 }
