@@ -19,7 +19,7 @@ class GooseGameSpec
         "are two in number" in {
           Given("An empty game")
           When("it is created")
-          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna"))(Some(true)))
+          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna"))(Some(true))(false))
 
           Then("two players should exist")
           val expected: Int = 2
@@ -31,12 +31,28 @@ class GooseGameSpec
           actual shouldEqual expected
         }
 
+        "are named Ric and Anna" in {
+          Given("An empty game")
+          When("it is created")
+          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Ric", "Anna"))(Some(true))(false))
+
+          Then("players Ric and Anna should exist")
+          val expected = Set("Ric", "Anna")
+          val actual: Set[String] = given
+            .retrieveAllEffects
+            .filter(_.isInstanceOf[Spawned[Receive[Player]]])
+            .map(_.asInstanceOf[Spawned[Receive[Player]]].childName)
+            .toSet
+
+          actual shouldEqual expected
+        }
+
         "are named Joe and Anna" in {
           Given("An empty game")
           When("it is created")
-          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna"))(Some(true)))
+          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna"))(Some(true))(true))
 
-          Then("players Joe and Anna should exist")
+          Then("1 player wins and the game terminates")
           val expected = Set("Joe", "Anna")
           val actual: Set[String] = given
             .retrieveAllEffects

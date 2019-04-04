@@ -8,16 +8,15 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
 sealed trait PCommand
-case class EndMove(who: ActorRef[PCommand], space: Int) extends PCommand
 case object EndPlayer extends PCommand
-case class Prank(from: ActorRef[PCommand], prankSpace: Int, returnSpace: Int) extends PCommand
+case class EndMove(who: ActorRef[PCommand], space: Int) extends PCommand
+case class Prank(who: ActorRef[PCommand], prankSpace: Int, returnSpace: Int) extends PCommand
 case class SetSpace(from: ActorRef[PCommand], newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
-case class StartMove(from: ActorRef[PCommand], seed: Int = 0) extends PCommand
-case class StartPlayer(automaticDices: Boolean = true) extends PCommand
-case class Winner(who: ActorRef[PCommand]) extends PCommand
+case class Move(seed: Int = 0) extends PCommand
+case class StartPlayer(automaticDices: Boolean = true, nextPlayer: ActorRef[PCommand]) extends PCommand
 
 class Player {
-  case class State_(automaticDices: Boolean, name: String, space: Int = 0)
+  case class State_(automaticDices: Boolean, name: String, nextPlayer: ActorRef[PCommand], space: Int = 0)
 
   val rest: Behavior[PCommand] = resting()
 
@@ -29,8 +28,12 @@ class Player {
   private def resting(): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
-        case StartPlayer(automaticDices) =>
-          val state: State_ = State_(automaticDices = automaticDices, name = ctx.self.path.toString.split("/").reverse.head, space = 0)
+        case StartPlayer(automaticDices, nextPlayer) =>
+          val state: State_ = State_(
+            automaticDices = automaticDices, 
+            name = ctx.self.path.toString.split("/").reverse.head, 
+            nextPlayer = nextPlayer,
+            space = 0)
           println(s"Player ${state.name} joined the Goose Game")
           playing(state = state)
         case _ =>
@@ -41,18 +44,22 @@ class Player {
   private[akka_goose_game] def playing(state: State_): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
-        case StartMove(from, seed) =>
+        case Move(seed) =>
           val newState: State_ = move(state = state, seed)
           exceedsBoard(state = newState) match {
             case 0 =>
-              from ! Winner(ctx.self)
+              println(s"Player ${state.name} won!")
+              Behaviors.stopped
             case _ =>
-              from ! EndMove(ctx.self, newState.space)
+              state.nextPlayer ! Prank(who = ctx.self, prankSpace = newState.space, returnSpace = state.space)
+              state.nextPlayer ! Move()
           }
           playing(newState)
         case Prank(from, prankSpace, returnSpace) =>
           val newState: State_ = prank(state = state, prankSpace = prankSpace, returnSpace = returnSpace)
-          from ! EndMove(ctx.self, newState.space)
+          if (from != ctx.self) {
+            state.nextPlayer ! Prank(who = from, prankSpace = prankSpace, returnSpace = returnSpace)
+          }
           playing(newState)
         case SetSpace(from, newSpace, dices) =>
           val newState: State_ = setSpace(state = state, newSpace = newSpace, dices = dices)
