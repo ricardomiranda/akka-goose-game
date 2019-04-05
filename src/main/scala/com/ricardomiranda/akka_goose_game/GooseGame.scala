@@ -9,25 +9,25 @@ import scala.annotation.tailrec
 object GooseGame {
   val root: List[String] => Option[Boolean] => Boolean => Behavior[NotUsed] = playersInit => automaticDicesInit => play => Behaviors.setup { ctx =>
     @tailrec
-    def addPlayers(automaticDices: Boolean, playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
+    def addPlayers(playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
       playersName match {
         case x :: xs =>
           val player: ActorRef[PCommand] = ctx.spawn(new Player().rest, x)
           ctx.watch(player)
-          addPlayers(automaticDices = automaticDices, playersName = xs, players = player :: players)
+          addPlayers(playersName = xs, players = player :: players)
         case Nil =>
           players
       }
 
     @tailrec
-    def startPlayers(players: List[ActorRef[PCommand]], firstPlayer: ActorRef[PCommand]): Unit = 
+    def startPlayers(players: List[ActorRef[PCommand]], firstPlayer: ActorRef[PCommand], automaticDices: Boolean): Unit = 
       players match {
         case x :: y :: xs =>
-          x ! StartPlayer(automaticDices = true, nextPlayer = y)
-          startPlayers(players = y :: xs, firstPlayer = firstPlayer)
+          x ! StartPlayer(automaticDices = automaticDices, nextPlayer = y)
+          startPlayers(players = y :: xs, firstPlayer = firstPlayer, automaticDices = automaticDices)
         case x :: Nil =>
-          x ! StartPlayer(automaticDices = true, nextPlayer = firstPlayer)
-          startPlayers(players = Nil, firstPlayer = firstPlayer)
+          x ! StartPlayer(automaticDices = automaticDices, nextPlayer = firstPlayer)
+          startPlayers(players = Nil, firstPlayer = firstPlayer, automaticDices = automaticDices)
         case Nil => // exit
       }
 
@@ -47,12 +47,11 @@ object GooseGame {
           b
       }
 
-    val players: List[ActorRef[PCommand]] = addPlayers(automaticDices = areAutomaticDices, playersName = listOfPlayers)
-    startPlayers(players = players, firstPlayer = players.head)
+    val players: List[ActorRef[PCommand]] = addPlayers(playersName = listOfPlayers)
+    startPlayers(players = players, firstPlayer = players.head, automaticDices = areAutomaticDices)
     
     if (play) {
-      println(s":::::::::::::::::::::::::::::::::::::::")
-      players.head ! Move()
+      players.head ! StartPlayer(automaticDices = true, nextPlayer = players.tail.head)
     }
 
     Behaviors.receiveSignal {
@@ -91,7 +90,7 @@ object GooseGame {
   }
 
   private[akka_goose_game] def automaticDices: Boolean = {
-    val automaticDices: String = readLine("Are dices automatic (y/n)? ").trim
+    val automaticDices: String = readLine("Are dices automatic (y/n)? \n").trim
     automaticDices match {
       case x if x == "y" =>
         true

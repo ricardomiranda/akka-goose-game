@@ -50,7 +50,7 @@ class GooseGameSpec
         "are named Joe and Anna" in {
           Given("An empty game")
           When("it is created")
-          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna"))(Some(true))(true))
+          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna", "Ric"))(Some(true))(true))
 
           Then("1 player wins and the game terminates")
           val expected = Set("Joe", "Anna")
@@ -59,6 +59,8 @@ class GooseGameSpec
             .filter(_.isInstanceOf[Spawned[Receive[Player]]])
             .map(_.asInstanceOf[Spawned[Receive[Player]]].childName)
             .toSet
+
+          Thread.sleep(5000)
 
           actual shouldEqual expected
         }

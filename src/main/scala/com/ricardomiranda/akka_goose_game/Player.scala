@@ -48,7 +48,6 @@ class Player {
           val newState: State_ = move(state = state, seed)
           exceedsBoard(state = newState) match {
             case 0 =>
-              println(s"Player ${state.name} won!")
               Behaviors.stopped
             case _ =>
               state.nextPlayer ! Prank(who = ctx.self, prankSpace = newState.space, returnSpace = state.space)
