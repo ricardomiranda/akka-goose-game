@@ -7,7 +7,7 @@ import scala.util.Random
 import scala.annotation.tailrec
 
 object GooseGame {
-  val root: List[String] => Option[Boolean] => Boolean => Behavior[NotUsed] = playersInit => automaticDicesInit => play => Behaviors.setup { ctx =>
+  val root: List[String] => Option[Boolean] => Behavior[NotUsed] = playersInit => automaticDicesInit => Behaviors.setup { ctx =>
     @tailrec
     def addPlayers(playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
       playersName match {
@@ -42,7 +42,7 @@ object GooseGame {
     val areAutomaticDices: Boolean =
       automaticDicesInit match { 
         case None => 
-          automaticDices
+          automaticDices()
         case Some(b) =>
           b
       }
@@ -50,9 +50,8 @@ object GooseGame {
     val players: List[ActorRef[PCommand]] = addPlayers(playersName = listOfPlayers)
     startPlayers(players = players, firstPlayer = players.head, automaticDices = areAutomaticDices)
     
-    if (play) {
-      players.head ! StartPlayer(automaticDices = true, nextPlayer = players.tail.head)
-    }
+    val r = new Random()
+    players.head ! Move(r = r)
 
     Behaviors.receiveSignal {
       case (_, Terminated(ref)) => Behaviors.stopped
@@ -89,13 +88,14 @@ object GooseGame {
     }
   }
 
-  private[akka_goose_game] def automaticDices: Boolean = {
-    val automaticDices: String = readLine("Are dices automatic (y/n)? \n").trim
+  private[akka_goose_game] def automaticDices(): Boolean = {
+    println("Are dices automatic (y/n)?")
+    val automaticDices: String = scala.io.StdIn.toString.trim
     automaticDices match {
-      case x if x == "y" =>
-        true
+      case x if x == "n" =>
+        false 
       case _ =>
-        false
+        true
     }
   }
 }
