@@ -7,7 +7,7 @@ import scala.util.Random
 import scala.annotation.tailrec
 
 object GooseGame {
-  val root: List[String] => Option[Boolean] => Behavior[NotUsed] = playersInit => automaticDicesInit => Behaviors.setup { ctx =>
+  val root: List[String] => Option[Boolean] => Behavior[NotUsed] = playersInit => automaticDices => Behaviors.setup { ctx =>
     @tailrec
     def addPlayers(playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
       playersName match {
@@ -39,18 +39,8 @@ object GooseGame {
           xs
       }
 
-    def areAutomaticDices(): Boolean =
-      automaticDicesInit match { 
-        case None => 
-          println("None")
-          automaticDices()
-        case Some(b) =>
-          println("Some")
-          b
-      }
-
     val players: List[ActorRef[PCommand]] = addPlayers(playersName = listOfPlayers)
-    startPlayers(players = players, firstPlayer = players.head, automaticDices = areAutomaticDices())
+    startPlayers(players = players, firstPlayer = players.head, automaticDices = this.automaticDices(automaticDices))
     
     val r = new Random()
     players.head ! Move(r = r)
@@ -67,7 +57,6 @@ object GooseGame {
       println(s"Current users are: ${currentPlayers.mkString(", ")}")
 
       val name: String = readLine("What's your name? \n").trim
-      println(name)
       name match {
         case x if x.isEmpty() =>
           println(s"Name cannot be empty")
@@ -83,7 +72,6 @@ object GooseGame {
     val players: List[String] = askPlayerName :: currentPlayers
 
     val morePlayers: String = readLine("Are there more players (y/n)? \n").trim
-    println(morePlayers)
     morePlayers match {
       case x if x == "y" =>
         goosePlayers(currentPlayers = players)
@@ -92,14 +80,22 @@ object GooseGame {
     }
   }
 
-  private[akka_goose_game] def automaticDices(): Boolean = {
-    val automaticDices: String = readLine("Are dices automatic (y/n)? \n").trim
-    println(automaticDices)
-    automaticDices match {
-      case x if x == "n" =>
-        false 
-      case _ =>
-        true
+  private[akka_goose_game] def automaticDices(automaticDices: Option[Boolean]): Boolean = {
+    def askIfDicesAreAutomatic(): Boolean = {
+      val automaticDices: String = readLine("Are dices automatic (y/n)? \n").trim
+      automaticDices match {
+        case x if x == "n" =>
+          false 
+        case _ =>
+          true
+      }
+    }
+
+    automaticDices match { 
+      case None => 
+        askIfDicesAreAutomatic()
+      case Some(b) =>
+        b
     }
   }
 }

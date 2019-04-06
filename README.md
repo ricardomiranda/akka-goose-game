@@ -7,6 +7,20 @@
 
 Goose game is a game where two or more players move pieces around a track by rolling a die. 
 
+## Run program
+Clone project to your machine.
+Go to project folder.
+Run instructions:
+
+```bash
+sbt assembly
+docker build -f ./Dockerfile . -t goose
+docker run -it goose
+```
+
+## Requisites
+You must have docker in your machine.
+
 ## Authors
 *   [Ricardo Miranda](https://github.com/ricardomiranda)
 
