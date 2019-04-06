@@ -83,7 +83,7 @@ class Player {
         newState
       case _ =>
         state
-  }
+    }
 
   private[akka_goose_game] def setSpace(state: State_, newSpace: Int, dices: (Int, Int)): State_ = {
     val setSpaceState: State_ = state.copy(space = newSpace)
