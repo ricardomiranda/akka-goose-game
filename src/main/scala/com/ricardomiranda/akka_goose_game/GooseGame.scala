@@ -39,16 +39,18 @@ object GooseGame {
           xs
       }
 
-    val areAutomaticDices: Boolean =
+    def areAutomaticDices(): Boolean =
       automaticDicesInit match { 
         case None => 
+          println("None")
           automaticDices()
         case Some(b) =>
+          println("Some")
           b
       }
 
     val players: List[ActorRef[PCommand]] = addPlayers(playersName = listOfPlayers)
-    startPlayers(players = players, firstPlayer = players.head, automaticDices = areAutomaticDices)
+    startPlayers(players = players, firstPlayer = players.head, automaticDices = areAutomaticDices())
     
     val r = new Random()
     players.head ! Move(r = r)
@@ -65,6 +67,7 @@ object GooseGame {
       println(s"Current users are: ${currentPlayers.mkString(", ")}")
 
       val name: String = readLine("What's your name? \n").trim
+      println(name)
       name match {
         case x if x.isEmpty() =>
           println(s"Name cannot be empty")
@@ -80,6 +83,7 @@ object GooseGame {
     val players: List[String] = askPlayerName :: currentPlayers
 
     val morePlayers: String = readLine("Are there more players (y/n)? \n").trim
+    println(morePlayers)
     morePlayers match {
       case x if x == "y" =>
         goosePlayers(currentPlayers = players)
@@ -89,8 +93,8 @@ object GooseGame {
   }
 
   private[akka_goose_game] def automaticDices(): Boolean = {
-    println("Are dices automatic (y/n)?")
-    val automaticDices: String = scala.io.StdIn.toString.trim
+    val automaticDices: String = readLine("Are dices automatic (y/n)? \n").trim
+    println(automaticDices)
     automaticDices match {
       case x if x == "n" =>
         false 
