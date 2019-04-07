@@ -175,20 +175,20 @@ class PlayerSpec
     }
   }
 
-  // "A Prank message" must {
-  //   "send player to space 30" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_111")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_112")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A Prank message" must {
+    "send player to space 30" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_111")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_112")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_1 ! SetSpace(newSpace = 33)
-  //     player_1 ! Prank(pranker = "Test_Player_112", prankSpace = 33, returnSpace = 30)
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_1 ! SetSpace(newSpace = 33)
+      player_1 ! Prank(pranker = "Test_Player_112", prankSpace = 33, returnSpace = 30)
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 30))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 30))
+    }
+  }
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 }
