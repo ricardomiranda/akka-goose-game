@@ -103,33 +103,33 @@ class PlayerSpec
     }
   }
 
-  // "A SetSpace to 14 (Goose) and dices 1, 3 message" must {
-  //   "send player to space 22" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_61")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_62")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A SetSpace to 14 (Goose) and dices 1, 3 message" must {
+    "send player to space 22" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_61")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_62")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_1 ! SetSpace(newSpace = 14, dices = (1 ,3))
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_1 ! SetSpace(newSpace = 14, dices = (1 ,3))
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 22))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 22))
+    }
+  }
 
-  // "A SetSpace to 6 (Bridge) and dices 1, 2 message" must {
-  //   "send player to space 12" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_71")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_72")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A SetSpace to 6 (Bridge) and dices 1, 2 message" must {
+    "send player to space 12" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_71")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_72")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_1 ! SetSpace(newSpace = 6, dices = (1 ,2))
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_1 ! SetSpace(newSpace = 6, dices = (1 ,2))
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 12))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 12))
+    }
+  }
 
   // "A SetSpace to 6 (Bridge) message" must {
   //   "send player to space 12" in {
