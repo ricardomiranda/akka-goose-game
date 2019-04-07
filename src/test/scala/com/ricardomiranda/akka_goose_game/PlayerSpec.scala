@@ -131,34 +131,34 @@ class PlayerSpec
     }
   }
 
-  // "A SetSpace to 6 (Bridge) message" must {
-  //   "send player to space 12" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_81")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_82")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A SetSpace to 6 (Bridge) message" must {
+    "send player to space 12" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_81")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_82")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_1 ! SetSpace(newSpace = 6)
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_1 ! SetSpace(newSpace = 6)
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 12))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 12))
+    }
+  }
 
-  // "A SetSpace to 62 message" must {
-  //   "send player to space 58" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_91")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_92")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A SetSpace to 62 message" must {
+    "send player to space 58" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_91")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_92")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_1 ! SetSpace(newSpace = 62)
-  //     player_1 ! Move()
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_1 ! SetSpace(newSpace = 62)
+      player_1 ! Move()
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 58))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 58))
+    }
+  }
 
   // "A SetSpace to 60 message" must {
   //   "send player to space 60" in {
