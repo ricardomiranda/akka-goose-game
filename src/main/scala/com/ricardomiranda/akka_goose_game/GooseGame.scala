@@ -7,46 +7,49 @@ import scala.util.Random
 import scala.annotation.tailrec
 
 object GooseGame {
-  val root: List[String] => Option[Boolean] => Behavior[NotUsed] = 
-    playersInit => automaticDicesInit => Behaviors.setup { ctx =>
-      @tailrec
-      def addPlayers(automaticDices: Boolean, playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
-        playersName match {
-          case x :: xs =>
-            val player: ActorRef[PCommand] = ctx.spawn(new Player().rest, x)
-            ctx.watch(player)
-            player ! StartPlayer(automaticDices = true)
-
-            addPlayers(automaticDices = automaticDices, playersName = xs, players = player :: players)
-          case Nil =>
-            players
-        }
-
-      val listOfPlayers: List[String] = 
-        playersInit match {
-          case Nil => 
-            goosePlayers()
-          case xs =>
-            xs
-        }
-
-      val areAutomaticDices: Boolean =
-        automaticDicesInit match { 
-          case None => 
-            automaticDices
-          case Some(b) =>
-            b
-        }
-
-      val players:List[ActorRef[PCommand]] = addPlayers(automaticDices = areAutomaticDices, playersName = listOfPlayers)
-
-
-      Behaviors.receiveSignal {
-        case (_, Terminated(ref)) => Behaviors.stopped
+  val root: List[String] => Option[Boolean] => Behavior[NotUsed] = playersInit => automaticDices => Behaviors.setup { ctx =>
+    @tailrec
+    def addPlayers(playersName: List[String], players: List[ActorRef[PCommand]] = Nil): List[ActorRef[PCommand]] =
+      playersName match {
+        case x :: xs =>
+          val player: ActorRef[PCommand] = ctx.spawn(new Player().rest, x)
+          ctx.watch(player)
+          addPlayers(playersName = xs, players = player :: players)
+        case Nil =>
+          players
       }
-    }
-  
 
+    @tailrec
+    def startPlayers(players: List[ActorRef[PCommand]], firstPlayer: ActorRef[PCommand], automaticDices: Boolean): Unit = 
+      players match {
+        case x :: y :: xs =>
+          x ! StartPlayer(automaticDices = automaticDices, nextPlayer = y)
+          startPlayers(players = y :: xs, firstPlayer = firstPlayer, automaticDices = automaticDices)
+        case x :: Nil =>
+          x ! StartPlayer(automaticDices = automaticDices, nextPlayer = firstPlayer)
+          startPlayers(players = Nil, firstPlayer = firstPlayer, automaticDices = automaticDices)
+        case Nil => // exit
+      }
+
+    val listOfPlayers: List[String] = 
+      playersInit match {
+        case Nil => 
+          goosePlayers()
+        case xs =>
+          xs
+      }
+
+    val players: List[ActorRef[PCommand]] = addPlayers(playersName = listOfPlayers)
+    startPlayers(players = players, firstPlayer = players.head, automaticDices = this.automaticDices(automaticDices))
+    
+    val r = new Random()
+    players.head ! Move(r = r)
+
+    Behaviors.receiveSignal {
+      case (_, Terminated(ref)) => Behaviors.stopped
+    }
+  }
+  
   @tailrec
   private[akka_goose_game] def goosePlayers(currentPlayers: List[String] = Nil): List[String] = {
     @tailrec
@@ -77,13 +80,22 @@ object GooseGame {
     }
   }
 
-  private[akka_goose_game] def automaticDices: Boolean = {
-    val automaticDices: String = readLine("Are dices automatic (y/n)? ").trim
-    automaticDices match {
-      case x if x == "y" =>
-        true
-      case _ =>
-        false
+  private[akka_goose_game] def automaticDices(automaticDices: Option[Boolean]): Boolean = {
+    def askIfDicesAreAutomatic(): Boolean = {
+      val automaticDices: String = readLine("Are dices automatic (y/n)? \n").trim
+      automaticDices match {
+        case x if x == "n" =>
+          false 
+        case _ =>
+          true
+      }
+    }
+
+    automaticDices match { 
+      case None => 
+        askIfDicesAreAutomatic()
+      case Some(b) =>
+        b
     }
   }
 }

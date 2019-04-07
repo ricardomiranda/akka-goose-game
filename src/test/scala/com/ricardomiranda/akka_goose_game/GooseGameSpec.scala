@@ -1,15 +1,14 @@
 package com.ricardomiranda.akka_goose_game
 
 import akka.NotUsed
+import akka.actor.testkit.typed.Effect.Spawned
 import akka.actor.typed.scaladsl.Behaviors.Receive
-import akka.testkit.typed.scaladsl.Effects.Spawned
-import akka.testkit.typed.scaladsl.{ActorTestKit, BehaviorTestKit}
+import akka.actor.testkit.typed.scaladsl.BehaviorTestKit
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen, Matchers, WordSpec}
 
 class GooseGameSpec
   extends WordSpec
     with Matchers
-    with ActorTestKit
     with BeforeAndAfterAll
     with GivenWhenThen {
 
@@ -31,13 +30,13 @@ class GooseGameSpec
           actual shouldEqual expected
         }
 
-        "are named Joe and Anna" in {
+        "are named Ric and Anna" in {
           Given("An empty game")
           When("it is created")
-          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Joe", "Anna"))(Some(true)))
+          val given: BehaviorTestKit[NotUsed] = BehaviorTestKit(GooseGame.root(List("Ric", "Anna"))(Some(true)))
 
-          Then("players Joe and Anna should exist")
-          val expected = Set("Joe", "Anna")
+          Then("players Ric and Anna should exist")
+          val expected = Set("Ric", "Anna")
           val actual: Set[String] = given
             .retrieveAllEffects
             .filter(_.isInstanceOf[Spawned[Receive[Player]]])
@@ -49,6 +48,4 @@ class GooseGameSpec
       }
     }
   }
-
-  override def afterAll(): Unit = shutdownTestKit()
 }

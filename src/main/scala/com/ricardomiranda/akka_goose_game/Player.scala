@@ -3,21 +3,21 @@ package com.ricardomiranda.akka_goose_game
 import java.util.Scanner
 
 import scala.annotation.tailrec
+import scala.util.Random
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
 sealed trait PCommand
-case class EndMove(who: ActorRef[PCommand], space: Int) extends PCommand
-case object EndPlayer extends PCommand
-case class Prank(from: ActorRef[PCommand], prankSpace: Int, returnSpace: Int) extends PCommand
-case class SetSpace(from: ActorRef[PCommand], newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
-case class StartMove(from: ActorRef[PCommand], seed: Int = 0) extends PCommand
-case class StartPlayer(automaticDices: Boolean = true) extends PCommand
-case class Winner(who: ActorRef[PCommand]) extends PCommand
+case class AskSpace(from: ActorRef[PCommand]) extends PCommand
+case class Move(r: Random = new Random(0)) extends PCommand
+case class Prank(pranker: String, prankSpace: Int, r: Random = new Random(0), returnSpace: Int) extends PCommand
+case class SetSpace(newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
+case class StartPlayer(automaticDices: Boolean = true, nextPlayer: ActorRef[PCommand]) extends PCommand
+case class TellSpace(space: Int) extends PCommand
 
 class Player {
-  case class State_(automaticDices: Boolean, name: String, space: Int = 0)
+  case class State_(automaticDices: Boolean, name: String, nextPlayer: ActorRef[PCommand], space: Int = 0)
 
   val rest: Behavior[PCommand] = resting()
 
@@ -29,8 +29,12 @@ class Player {
   private def resting(): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
-        case StartPlayer(automaticDices) =>
-          val state: State_ = State_(automaticDices = automaticDices, name = ctx.self.path.toString.split("/").reverse.head, space = 0)
+        case StartPlayer(automaticDices, nextPlayer) =>
+          val state: State_ = State_(
+            automaticDices = automaticDices, 
+              name = ctx.self.path.toString.split("/").last,
+            nextPlayer = nextPlayer,
+            space = 0)
           println(s"Player ${state.name} joined the Goose Game")
           playing(state = state)
         case _ =>
@@ -41,25 +45,33 @@ class Player {
   private[akka_goose_game] def playing(state: State_): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
-        case StartMove(from, seed) =>
-          val newState: State_ = move(state = state, seed)
+        case AskSpace(from) =>
+          from ! TellSpace(space = state.space)
+          Behaviors.same
+        case Move(r) =>
+          val newState: State_ = move(state = state, r = r)
           exceedsBoard(state = newState) match {
             case 0 =>
-              from ! Winner(ctx.self)
+              println(s"Player ${state.name} wins the game!")
+              Behaviors.stopped
             case _ =>
-              from ! EndMove(ctx.self, newState.space)
+              state.nextPlayer ! Prank(pranker = state.name, prankSpace = newState.space, r = r, returnSpace = state.space)
           }
           playing(newState)
-        case Prank(from, prankSpace, returnSpace) =>
-          val newState: State_ = prank(state = state, prankSpace = prankSpace, returnSpace = returnSpace)
-          from ! EndMove(ctx.self, newState.space)
+        case Prank(pranker, prankSpace, r, returnSpace) =>
+          val newState: State_ = 
+            pranker match {
+              case x if x != state.name =>
+                state.nextPlayer ! Prank(pranker = pranker, prankSpace = prankSpace, r = r, returnSpace = returnSpace)
+                prank(state = state, prankSpace = prankSpace, returnSpace = returnSpace)
+              case _ =>
+                state.nextPlayer ! Move(r = r)
+                state
+            }
           playing(newState)
-        case SetSpace(from, newSpace, dices) =>
+        case SetSpace(newSpace, dices) =>
           val newState: State_ = setSpace(state = state, newSpace = newSpace, dices = dices)
-          from ! EndMove(ctx.self, newState.space)
           playing(newState)
-        case EndPlayer =>
-          Behaviors.stopped
         case _ =>
           Behaviors.same
       }
@@ -73,7 +85,7 @@ class Player {
         newState
       case _ =>
         state
-  }
+    }
 
   private[akka_goose_game] def setSpace(state: State_, newSpace: Int, dices: (Int, Int)): State_ = {
     val setSpaceState: State_ = state.copy(space = newSpace)
@@ -82,18 +94,17 @@ class Player {
     newState
   }
  
-  private[akka_goose_game] def move(state: State_, seed: Int): State_ = {
-    val dices: (Int, Int) = rollDices(state = state, seed = seed)
+  private[akka_goose_game] def move(state: State_, r: Random): State_ = {
+    val dices: (Int, Int) = rollDices(state = state, r = r)
     val moveState: State_ = state.copy(space = state.space + dices._1 + dices._2)
+    println(s"${state.name} rolls ${dices._1}, ${dices._2}. ${state.name} moves from ${state.space} to ${moveState.space}.")
     val newState: State_ = checkSpace(state = moveState, dices = dices)
-    println(s"${state.name} rools ${dices._1}, ${dices._2}. ${state.name} moves from ${state.space} to ${newState.space}.")
     newState
   }
 
-  private[akka_goose_game] def rollDices(state: State_, seed: Int): (Int, Int) =
+  private[akka_goose_game] def rollDices(state: State_, r: Random): (Int, Int) =
     state.automaticDices match { 
       case true => 
-        val r = new scala.util.Random(seed)
         val max: Int = 6
         (r.nextInt(max) + 1, r.nextInt(max) + 1)
       case false => 

@@ -5,11 +5,11 @@ lazy val commonSettings = Seq(
 )
 lazy val dependencies = Seq(
   // https://mvnrepository.com/artifact/com.typesafe.akka/akka-actor-typed
-  "com.typesafe.akka" %% "akka-actor-typed" % "2.5.12",
+  "com.typesafe.akka" %% "akka-actor-typed" % "2.5.22",
   // https://mvnrepository.com/artifact/org.scalatest/scalatest
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   // https://mvnrepository.com/artifact/com.typesafe.akka/akka-testkit-typed
-  "com.typesafe.akka" %% "akka-testkit-typed" % "2.5.12" % Test,
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.5.22" % Test,
   //https://mvnrepository.com/artifact/com.github.stefanbirkner/system-rules
   "com.github.stefanbirkner" % "system-rules" % "1.17.2" % Test
 )
