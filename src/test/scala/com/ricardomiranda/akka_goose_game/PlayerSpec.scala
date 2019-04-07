@@ -160,20 +160,20 @@ class PlayerSpec
     }
   }
 
-  // "A SetSpace to 60 message" must {
-  //   "send player to space 60" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_101")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_102")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A SetSpace to 60 message" must {
+    "send player to space 60" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_101")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_102")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_1 ! SetSpace(newSpace = 60)
-  //     player_1 ! Move()
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_1 ! SetSpace(newSpace = 60)
+      player_1 ! Move()
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 60))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 60))
+    }
+  }
 
   // "A Prank message" must {
   //   "send player to space 30" in {
