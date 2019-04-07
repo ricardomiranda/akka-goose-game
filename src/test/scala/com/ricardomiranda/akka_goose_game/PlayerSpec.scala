@@ -47,33 +47,33 @@ class PlayerSpec
      }
    }
 
-  // "A player with seed 1090" must {
-  //   "send message with position 7" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_21")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_22")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A player with seed 1090" must {
+    "send message with position 7" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_21")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_22")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_2 ! StartPlayer(nextPlayer = player_1)
-  //     player_1 ! Move()
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_2 ! StartPlayer(nextPlayer = player_1)
+      player_1 ! Move()
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(TellSpace(space = 12))
-  //   }
-  // }
+      probe.expectMessage(TellSpace(space = 12))
+    }
+  }
 
-  // "An invalidad message in resting behaviour" must {
-  //   "not change state" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_31")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_32")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "An invalidad message in resting behaviour" must {
+    "not change state" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_31")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_32")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! Move()
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! Move()
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectNoMessage()
-  //   }
-  // }
+      probe.expectNoMessage()
+    }
+  }
 
   // "A SetSpace to 4 message" must {
   //   "send player to space 4" in {
