@@ -9,11 +9,12 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
 sealed trait PCommand
-case object EndPlayer extends PCommand
+case class AskSpace(from: ActorRef[PCommand]) extends PCommand
+case class Move(r: Random = new Random(0)) extends PCommand
 case class Prank(pranker: String, prankSpace: Int, r: Random, returnSpace: Int) extends PCommand
 case class SetSpace(newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
-case class Move(r: Random = new Random(0)) extends PCommand
 case class StartPlayer(automaticDices: Boolean = true, nextPlayer: ActorRef[PCommand]) extends PCommand
+case class TellSpace(space: Int) extends PCommand
 
 class Player {
   case class State_(automaticDices: Boolean, name: String, nextPlayer: ActorRef[PCommand], space: Int = 0)
@@ -44,6 +45,9 @@ class Player {
   private[akka_goose_game] def playing(state: State_): Behavior[PCommand] =
     Behaviors.receive[PCommand] { (ctx, msg) =>
       msg match {
+        case AskSpace(from) =>
+          from ! TellSpace(space = state.space)
+          Behaviors.same
         case Move(r) =>
           val newState: State_ = move(state = state, r = r)
           exceedsBoard(state = newState) match {
@@ -68,8 +72,6 @@ class Player {
         case SetSpace(newSpace, dices) =>
           val newState: State_ = setSpace(state = state, newSpace = newSpace, dices = dices)
           playing(newState)
-        case EndPlayer =>
-          Behaviors.stopped
         case _ =>
           Behaviors.same
       }

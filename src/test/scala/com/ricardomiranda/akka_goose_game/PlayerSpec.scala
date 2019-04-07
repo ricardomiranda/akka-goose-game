@@ -1,50 +1,66 @@
 package com.ricardomiranda.akka_goose_game
 
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.testkit.typed.scaladsl.{ActorTestKit, BehaviorTestKit, TestProbe}
+import akka.actor.typed._
+import akka.actor.testkit.typed.scaladsl.{ActorTestKit, BehaviorTestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
 class PlayerSpec
   extends WordSpec
-    with ActorTestKit
     with Matchers
     with BeforeAndAfterAll {
 
-  // "A player" must {
-  //   "send message" in {
-  //     val probe: TestProbe[PCommand] = TestProbe[PCommand]()
-  //     val player: ActorRef[PCommand] = spawn(new Player().rest, "Test_Player")
+  val testKit = ActorTestKit()
 
-  //      player ! StartPlayer(nextPlayer = probe)
-  //      player ! Move()
 
-  //     probe.expectMessageType[PCommand]
-  //   }
-  // }
+  "A player" must {
+    "be alive" in {
+      val testKit: BehaviorTestKit[PCommand] = BehaviorTestKit(new Player().rest)
+      assert(testKit.isAlive)
+    }
+  }
 
-  // "A player with seed 0" must {
-  //   "send message with position 12" in {
-  //     val probe: TestProbe[PCommand] = TestProbe[PCommand]()
-  //     val player: ActorRef[PCommand] = spawn(new Player().rest, "Other_Player")
+  "A player" must {
+    "send message" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_01")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_02")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player ! StartPlayer(automaticDices = true)
-  //     player ! StartMove(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_2 ! StartPlayer(nextPlayer = player_1)
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(EndMove(player, 12))
-  //   }
-  // }
+      probe.expectMessageType[PCommand]
+    }
+  }
 
-  // "A player with seed 1090" must {
-  //   "send message with position 7" in {
-  //     val probe: TestProbe[PCommand] = TestProbe[PCommand]()
-  //     val player: ActorRef[PCommand] = spawn(new Player().rest, "Test_other_Player")
+   "A player with seed 0" must {
+     "send message with position 12" in {
+       val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_11")
+       val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_12")
+       val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player ! StartPlayer(nextPlayer = probe)
-  //     player ! Move()
+       player_1 ! StartPlayer(nextPlayer = player_2)
+       player_2 ! StartPlayer(nextPlayer = player_1)
+       player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessage(EndMove(player, 7))
-  //   }
-  // }
+       probe.expectMessage(TellSpace(space = 0))
+     }
+   }
+
+  "A player with seed 1090" must {
+    "send message with position 7" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_21")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_22")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
+
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_2 ! StartPlayer(nextPlayer = player_1)
+      player_1 ! Move()
+      player_1 ! AskSpace(from = probe.ref)
+
+      probe.expectMessage(TellSpace(space = 12))
+    }
+  }
 
   // "An invalidad message in resting behaviour" must {
   //   "not change state" in {
@@ -198,5 +214,5 @@ class PlayerSpec
   //   }
   // }
 
-  override def afterAll(): Unit = shutdownTestKit()
+  override def afterAll(): Unit = testKit.shutdownTestKit()
 }

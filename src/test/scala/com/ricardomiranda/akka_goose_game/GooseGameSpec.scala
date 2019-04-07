@@ -1,15 +1,14 @@
 package com.ricardomiranda.akka_goose_game
 
 import akka.NotUsed
+import akka.actor.testkit.typed.Effect.Spawned
 import akka.actor.typed.scaladsl.Behaviors.Receive
-import akka.testkit.typed.scaladsl.Effects.Spawned
-import akka.testkit.typed.scaladsl.{ActorTestKit, BehaviorTestKit}
+import akka.actor.testkit.typed.scaladsl.BehaviorTestKit
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen, Matchers, WordSpec}
 
 class GooseGameSpec
   extends WordSpec
     with Matchers
-    with ActorTestKit
     with BeforeAndAfterAll
     with GivenWhenThen {
 
@@ -49,6 +48,4 @@ class GooseGameSpec
       }
     }
   }
-
-  override def afterAll(): Unit = shutdownTestKit()
 }
