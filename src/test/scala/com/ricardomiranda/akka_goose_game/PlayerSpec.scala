@@ -12,12 +12,12 @@ class PlayerSpec
   val testKit = ActorTestKit()
 
 
-  // "A player" must {
-  //   "be alive" in {
-  //     val testKit: BehaviorTestKit[PCommand] = BehaviorTestKit(new Player().rest)
-  //     assert(testKit.isAlive)
-  //   }
-  // }
+  "A player" must {
+    "be alive" in {
+      val testKit: BehaviorTestKit[PCommand] = BehaviorTestKit(new Player().rest)
+      assert(testKit.isAlive)
+    }
+  }
 
   // "A player" must {
   //   "send message" in {
