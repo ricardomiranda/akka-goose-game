@@ -11,7 +11,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 sealed trait PCommand
 case class AskSpace(from: ActorRef[PCommand]) extends PCommand
 case class Move(r: Random = new Random(0)) extends PCommand
-case class Prank(pranker: String, prankSpace: Int, r: Random, returnSpace: Int) extends PCommand
+case class Prank(pranker: String, prankSpace: Int, r: Random = new Random(0), returnSpace: Int) extends PCommand
 case class SetSpace(newSpace: Int, dices: (Int, Int) = (0, 0)) extends PCommand
 case class StartPlayer(automaticDices: Boolean = true, nextPlayer: ActorRef[PCommand]) extends PCommand
 case class TellSpace(space: Int) extends PCommand
@@ -97,8 +97,8 @@ class Player {
   private[akka_goose_game] def move(state: State_, r: Random): State_ = {
     val dices: (Int, Int) = rollDices(state = state, r = r)
     val moveState: State_ = state.copy(space = state.space + dices._1 + dices._2)
+    println(s"${state.name} rolls ${dices._1}, ${dices._2}. ${state.name} moves from ${state.space} to ${moveState.space}.")
     val newState: State_ = checkSpace(state = moveState, dices = dices)
-    println(s"${state.name} rools ${dices._1}, ${dices._2}. ${state.name} moves from ${state.space} to ${newState.space}.")
     newState
   }
 
