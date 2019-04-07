@@ -62,18 +62,18 @@ class PlayerSpec
     }
   }
 
-  "An invalidad message in resting behaviour" must {
-    "not change state" in {
-      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_31")
-      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_32")
-      val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  // "An invalidad message in resting behaviour" must {
+  //   "not change state" in {
+  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_31")
+  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_32")
+  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-      player_1 ! Move()
-      player_1 ! AskSpace(from = probe.ref)
+  //     player_1 ! Move()
+  //     player_1 ! AskSpace(from = probe.ref)
 
-      probe.expectNoMessage()
-    }
-  }
+  //     probe.expectNoMessage()
+  //   }
+  // }
 
   // "A SetSpace to 4 message" must {
   //   "send player to space 4" in {
