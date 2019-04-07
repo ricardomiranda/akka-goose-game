@@ -19,33 +19,33 @@ class PlayerSpec
     }
   }
 
-  // "A player" must {
-  //   "send message" in {
-  //     val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_01")
-  //     val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_02")
-  //     val probe: TestProbe[PCommand] = testKit.createTestProbe()
+  "A player" must {
+    "send message" in {
+      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_01")
+      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_02")
+      val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //     player_1 ! StartPlayer(nextPlayer = player_2)
-  //     player_2 ! StartPlayer(nextPlayer = player_1)
-  //     player_1 ! AskSpace(from = probe.ref)
+      player_1 ! StartPlayer(nextPlayer = player_2)
+      player_2 ! StartPlayer(nextPlayer = player_1)
+      player_1 ! AskSpace(from = probe.ref)
 
-  //     probe.expectMessageType[PCommand]
-  //   }
-  // }
+      probe.expectMessageType[PCommand]
+    }
+  }
 
-  //  "A player with seed 0" must {
-  //    "send message with position 12" in {
-  //      val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_11")
-  //      val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_12")
-  //      val probe: TestProbe[PCommand] = testKit.createTestProbe()
+   "A player with seed 0" must {
+     "send message with position 12" in {
+       val player_1: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_11")
+       val player_2: ActorRef[PCommand] = testKit.spawn(new Player().rest, "Test_Player_12")
+       val probe: TestProbe[PCommand] = testKit.createTestProbe()
 
-  //      player_1 ! StartPlayer(nextPlayer = player_2)
-  //      player_2 ! StartPlayer(nextPlayer = player_1)
-  //      player_1 ! AskSpace(from = probe.ref)
+       player_1 ! StartPlayer(nextPlayer = player_2)
+       player_2 ! StartPlayer(nextPlayer = player_1)
+       player_1 ! AskSpace(from = probe.ref)
 
-  //      probe.expectMessage(TellSpace(space = 0))
-  //    }
-  //  }
+       probe.expectMessage(TellSpace(space = 0))
+     }
+   }
 
   // "A player with seed 1090" must {
   //   "send message with position 7" in {
