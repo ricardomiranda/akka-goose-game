@@ -9,6 +9,7 @@
 dist/*
 target/
 project/*
+project/build.properties
 !project/site.sbt
 project/r
 lib_managed/
